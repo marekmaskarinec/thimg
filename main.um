@@ -1,0 +1,158 @@
+
+import (
+	"th.um"
+	"ui.um"
+	"std.um"
+	"rect.um"
+	"input.um"
+	"image.um"
+	"canvas.um"
+	"window.um"
+
+	"dialog.um"
+)
+
+const (
+	size = 400
+	squareSize = 5	
+)
+
+var (
+	cam, dcam: rect.Rect
+
+	img: image.Image
+	zoom: th.fu
+	rot: th.fu
+	shift: th.Vf2
+
+	oldShift: th.Vf2
+	mouseOrigin: th.Vf2
+)
+
+fn drawBoard*() {
+	w := cam.w / squareSize
+	h := cam.h / squareSize
+	for x:=0; x < w; x++ {
+		for y:=0; y < h; y++ {
+			if (x + y) % 2 == 0 {
+				canvas.setColor(0x333333ff)
+			} else {
+				canvas.setColor(0xaaaaaaff)
+			}
+			canvas.drawRect(rect.mk(x * squareSize, y * squareSize, squareSize, squareSize))
+		}
+	}
+}
+
+fn setImage*(i: image.Image) {
+	img = i
+	dm := img.getDims()
+
+	if dm.x <= dcam.w && dm.y <= dcam.h {
+		zoom = 1
+	} else if dm.x > dm.y {
+		zoom = dcam.w / dm.x
+	} else {
+		zoom = dcam.h / dm.y
+	}
+}
+
+fn drawImage() {
+	if img.handle == 0 {
+		return
+	}
+
+	half := img.getDims().div(th.Vf2{ 2, 2 })
+
+	pos := th.Vf2{ cam.w / 2, cam.h / 2 }
+
+	img.draw(th.Transform{
+		p: pos.add(shift).sub(half.mul(th.Vf2{ zoom, zoom })),
+		s: th.Vf2{ zoom, zoom },
+		o: half,
+		r: rot})
+}
+
+fn updateCam() {
+	w := window.w
+	h := window.h
+
+	if w > h {
+		cam.h = dcam.h
+		cam.w = th.fu(w)/h * dcam.w
+	} else {
+		cam.w = dcam.w
+		cam.h = th.fu(h)/w * dcam.h
+	}
+}
+
+fn handleMouse() {
+	if input.isJustPressed(input.mouse1) {
+		oldShift = shift
+		mouseOrigin = input.getMousePos()
+	}
+
+	if input.isPressed(input.mouse1) {
+		shift = oldShift.add(input.getMousePos()).sub(mouseOrigin)
+	}	
+}
+
+fn main() {
+	window.setup("Image viewer", 800, 800)
+	cam = rect.mk(0, 0, size, size)
+	dcam = cam
+
+	grid := ui.mkGrid(3, 1)
+	grid.border = 8
+
+	fg := th.white
+	bg := th.black
+
+	openButton := ui.mkSimpleLabel("OPEN", fg, 2)
+	openButton.center = true
+	openButton.bgColor = bg
+	openButton.g.gridPos = th.Vf2{0, 0}
+	openButton.g.onEvent = fn(eventType: th.uu, ctx: interface{}) {
+		if eventType != ui.eventRelease { return }
+
+		path := dialog.getFile()
+		if path != "" {
+			setImage(image.load(path))
+		}
+	}
+
+	zoompButton := ui.mkSimpleLabel("+", fg, 2)
+	zoompButton.center = true
+	zoompButton.bgColor = bg
+	zoompButton.g.gridPos = th.Vf2{1, 0}
+	zoompButton.g.onEvent = fn(eventType: th.uu, ctx: interface{}) {
+		if eventType != ui.eventPress { return }
+
+		zoom += 0.001 * th.delta * zoom
+	}
+
+	zoommButton := ui.mkSimpleLabel("-", fg, 2)
+	zoommButton.center = true
+	zoommButton.bgColor = bg
+	zoommButton.g.gridPos = th.Vf2{2, 0}
+	zoommButton.g.onEvent = fn(eventType: th.uu, ctx: interface{}) {
+		if eventType != ui.eventPress { return }
+
+		zoom -= 0.001 * th.delta * zoom
+	}
+
+	grid.elements = []ui.Element{openButton, zoompButton, zoommButton}
+
+	for window.cycle(cam) {
+		updateCam()
+		handleMouse()
+		drawBoard()
+		drawImage()
+
+		grid.g.t = th.Transform{ p: th.Vf2{ 0, 0 }, s: th.Vf2{ cam.w, 25 } }
+		grid.handle()
+		canvas.setColor(0x222222ff)
+		canvas.drawRect(rect.mk(0, 0, cam.w, 25))
+		grid.draw()
+	}
+}

@@ -1,0 +1,8 @@
+
+fn c_getFile(buf: ^char)
+
+fn getFile*(): str {
+	buf := make([]char, 4096)
+	c_getFile(&buf[0])
+	return str(buf)
+}

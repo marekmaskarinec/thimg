@@ -1,0 +1,4 @@
+#!/bin/sh
+
+cc -fpic -c dialog.c
+cc -shared -o dialog.umi dialog.o
