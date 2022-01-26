@@ -34,12 +34,11 @@ fn drawBoard*() {
 	h := cam.h / squareSize
 	for x:=0; x < w; x++ {
 		for y:=0; y < h; y++ {
+			c := 0xaaaaaaff
 			if (x + y) % 2 == 0 {
-				canvas.setColor(0x333333ff)
-			} else {
-				canvas.setColor(0xaaaaaaff)
+				c = 0x333333ff
 			}
-			canvas.drawRect(rect.mk(x * squareSize, y * squareSize, squareSize, squareSize))
+			canvas.drawRect(c, rect.mk(x * squareSize, y * squareSize, squareSize, squareSize))
 		}
 	}
 }
@@ -70,7 +69,7 @@ fn drawImage() {
 		p: pos.add(shift).sub(half.mul(th.Vf2{ zoom, zoom })),
 		s: th.Vf2{ zoom, zoom },
 		o: half,
-		r: rot})
+		r: rot}, th.white)
 }
 
 fn updateCam() {
@@ -117,7 +116,7 @@ fn main() {
 
 		path := dialog.getFile()
 		if path != "" {
-			setImage(image.load(path))
+			setImage(image.load("raw://" + path))
 		}
 	}
 
@@ -151,8 +150,7 @@ fn main() {
 
 		grid.g.t = th.Transform{ p: th.Vf2{ 0, 0 }, s: th.Vf2{ cam.w, 25 } }
 		grid.handle()
-		canvas.setColor(0x222222ff)
-		canvas.drawRect(rect.mk(0, 0, cam.w, 25))
+		canvas.drawRect(0x222222ff, rect.mk(0, 0, cam.w, 25))
 		grid.draw()
 	}
 }
