@@ -2,6 +2,8 @@
 import (
 	"th.um"
 	"ui.um"
+	"ui/grid.um"
+	"ui/label.um"
 	"std.um"
 	"rect.um"
 	"input.um"
@@ -101,15 +103,18 @@ fn main() {
 	cam = rect.mk(0, 0, size, size)
 	dcam = cam
 
-	grid := ui.mkGrid(3, 1)
-	grid.border = 8
+	grd := grid.mk(3, 1)
+	grd.border = 8
 
 	fg := th.white
 	bg := th.black
 
-	openButton := ui.mkSimpleLabel("OPEN", fg, 2)
+	theme := ui.Theme {
+		fg: fg,
+		bg: bg}
+
+	openButton := label.mk(ui.PixelFont{}, "OPEN", theme, 2)
 	openButton.center = true
-	openButton.bgColor = bg
 	openButton.g.gridPos = th.Vf2{0, 0}
 	openButton.g.onEvent = fn(eventType: th.uu, ctx: interface{}) {
 		if eventType != ui.eventRelease { return }
@@ -120,9 +125,8 @@ fn main() {
 		}
 	}
 
-	zoompButton := ui.mkSimpleLabel("+", fg, 2)
+	zoompButton := label.mk(ui.PixelFont{}, "+", theme, 2)
 	zoompButton.center = true
-	zoompButton.bgColor = bg
 	zoompButton.g.gridPos = th.Vf2{1, 0}
 	zoompButton.g.onEvent = fn(eventType: th.uu, ctx: interface{}) {
 		if eventType != ui.eventPress { return }
@@ -130,9 +134,8 @@ fn main() {
 		zoom += 0.001 * th.delta * zoom
 	}
 
-	zoommButton := ui.mkSimpleLabel("-", fg, 2)
+	zoommButton := label.mk(ui.PixelFont{}, "-", theme, 2)
 	zoommButton.center = true
-	zoommButton.bgColor = bg
 	zoommButton.g.gridPos = th.Vf2{2, 0}
 	zoommButton.g.onEvent = fn(eventType: th.uu, ctx: interface{}) {
 		if eventType != ui.eventPress { return }
@@ -140,7 +143,7 @@ fn main() {
 		zoom -= 0.001 * th.delta * zoom
 	}
 
-	grid.elements = []ui.Element{openButton, zoompButton, zoommButton}
+	grd.elements = []ui.Element{openButton, zoompButton, zoommButton}
 
 	for window.cycle(cam) {
 		updateCam()
@@ -148,9 +151,9 @@ fn main() {
 		drawBoard()
 		drawImage()
 
-		grid.g.t = th.Transform{ p: th.Vf2{ 0, 0 }, s: th.Vf2{ cam.w, 25 } }
-		grid.handle()
+		grd.g.t = th.Transform{ p: th.Vf2{ 0, 0 }, s: th.Vf2{ cam.w, 25 } }
+		grd.handle()
 		canvas.drawRect(0x222222ff, rect.mk(0, 0, cam.w, 25))
-		grid.draw()
+		grd.draw()
 	}
 }
