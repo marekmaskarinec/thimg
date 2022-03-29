@@ -21,6 +21,8 @@ int openDialog(char *buf) {
 	ofn.lpstrInitialDir=NULL;
 	ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
 
+	printf("%s\n", buf);
+	
 	return GetOpenFileName(&ofn);
 }
 #endif

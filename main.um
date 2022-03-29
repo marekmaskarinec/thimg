@@ -103,6 +103,10 @@ fn main() {
 	cam = rect.mk(0, 0, size, size)
 	dcam = cam
 
+	if std.argc() != 0 {
+		setImage(image.load("raw://" + std.argv(0)))
+	}
+
 	grd := grid.mk(3, 1)
 	grd.border = 8
 
