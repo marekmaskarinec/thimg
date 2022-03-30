@@ -19,10 +19,9 @@ int openDialog(char *buf) {
 	ofn.lpstrFileTitle = NULL;
 	ofn.nMaxFileTitle = 0;
 	ofn.lpstrInitialDir=NULL;
+	ofn.nMaxFile = 4096;
 	ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
 
-	printf("%s\n", buf);
-	
 	return GetOpenFileName(&ofn);
 }
 #endif
@@ -43,6 +42,7 @@ void c_getFile(UmkaStackSlot *par, UmkaStackSlot *r) {
 #elif _WIN32
 	openDialog(par[0].ptrVal);
 #else
+	fprintf(stderr, "Thimg can't open a file dialog on this platform.")
 #error thimg can't open a file dialog on this platform
 #endif
 }
